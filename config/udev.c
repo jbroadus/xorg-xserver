@@ -146,6 +146,9 @@ device_added(struct udev_device *udev_device)
     if (!input_options)
         return;
 
+    name = udev_device_get_property_value(udev_device, "XINPUT_NAME");
+    LOG_PROPERTY(path, "XINPUT_NAME", name);
+
     parent = udev_device_get_parent(udev_device);
     if (parent) {
         const char *ppath = udev_device_get_devnode(parent);
@@ -153,11 +156,13 @@ device_added(struct udev_device *udev_device)
         const char *pnp_id = udev_device_get_sysattr_value(parent, "id");
         unsigned int usb_vendor, usb_model;
 
-        name = udev_device_get_sysattr_value(parent, "name");
-        LOG_SYSATTR(ppath, "name", name);
         if (!name) {
-            name = udev_device_get_property_value(parent, "NAME");
-            LOG_PROPERTY(ppath, "NAME", name);
+            name = udev_device_get_sysattr_value(parent, "name");
+            LOG_SYSATTR(ppath, "name", name);
+            if (!name) {
+                name = udev_device_get_property_value(parent, "NAME");
+                LOG_PROPERTY(ppath, "NAME", name);
+            }
         }
 
         /* construct USB ID in lowercase hex - "0000:ffff" */
